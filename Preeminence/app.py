@@ -180,7 +180,7 @@ import streamlit as st
 import joblib
 
 @st.cache_resource
-def load_models():
+def load_model():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
     model = joblib.load(os.path.join(BASE_DIR, "model.pkl"))
@@ -309,3 +309,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
