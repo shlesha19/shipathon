@@ -2,12 +2,18 @@ import streamlit as st
 import joblib
 import re
 
-# Load saved models
+import os
+import streamlit as st
+import joblib
+
 @st.cache_resource
 def load_models():
-    model = joblib.load('model.pkl')
-    tfidf = joblib.load('tfidf.pkl')
-    label_encoder = joblib.load('label_encoder.pkl')
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    model = joblib.load(os.path.join(BASE_DIR, "model.pkl"))
+    tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf.pkl"))
+    label_encoder = joblib.load(os.path.join(BASE_DIR, "label_encoder.pkl"))
+
     return model, tfidf, label_encoder
 
 # Text cleaning function
@@ -368,4 +374,5 @@ st.markdown("""
         <p>Built with ❤️ using Streamlit and Scikit-learn</p>
         <p>🎵 Music Genre Classifier v1.0 | 2024</p>
     </div>
+
 """, unsafe_allow_html=True)
