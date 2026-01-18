@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import re
 import joblib
+import os
+import base64
 from pathlib import Path
 
 # ===================== PAGE CONFIG =====================
@@ -11,29 +13,100 @@ st.set_page_config(
     layout="wide"
 )
 
-# ===================== CSS (Festival aesthetic) =====================
-st.markdown("""
+# ===================== HELPER FUNCTIONS =====================
+def get_base64_image(image_path):
+    """Convert image to base64 for embedding in CSS"""
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except:
+        return None
+
+# Get base64 encoded images
+frame1_b64 = get_base64_image("frame1.png")
+frame2_b64 = get_base64_image("frame2.png")
+
+# ===================== CSS (Festival aesthetic with scroll transition) =====================
+st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800;900&display=swap');
 
-html, body, [class*="css"] {
+html, body, [class*="css"] {{
     font-family: 'Poppins', sans-serif !important;
-}
+}}
 
-/* Background */
-.stApp {
-    background: radial-gradient(circle at top,#1e0036,#12001e,#09000e 65%) !important;
+/* Background with scroll transition effect */
+.stApp {{
+    position: relative;
+    background: #000000 !important;
     color: #eee !important;
-}
+    overflow-x: hidden;
+}}
+
+/* Scroll background container */
+.scroll-bg {{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+}}
+
+.bg-frame {{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 0.3s ease;
+}}
+
+#frame1 {{
+    background-image: url('data:image/png;base64,{frame1_b64 if frame1_b64 else ""}');
+    opacity: 1;
+    z-index: 1;
+}}
+
+#frame2 {{
+    background-image: url('data:image/png;base64,{frame2_b64 if frame2_b64 else ""}');
+    opacity: 0;
+    z-index: 2;
+}}
+
+/* Fallback gradient if images don't load */
+.stApp::before {{
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: radial-gradient(circle at top,#1e0036,#12001e,#09000e 65%);
+    z-index: -1;
+    pointer-events: none;
+}}
+
+/* Content container with higher z-index */
+.main-content {{
+    position: relative;
+    z-index: 10;
+}}
 
 /* Hero */
-.hero {
+.hero {{
     padding: 90px 20px;
     text-align: center;
     color: white;
-}
+    position: relative;
+    z-index: 10;
+}}
 
-.hero-title {
+.hero-title {{
     font-size: 60px;
     font-weight: 900;
     letter-spacing: 2px;
@@ -43,47 +116,51 @@ html, body, [class*="css"] {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 10px;
-}
+    text-shadow: 0 0 30px rgba(255,0,234,0.5);
+}}
 
-.hero-sub {
+.hero-sub {{
     font-size: 20px;
     margin-top: 10px;
     opacity: 0.85;
     color: white;
-}
+    text-shadow: 0 0 20px rgba(255,203,60,0.3);
+}}
 
 /* Input container */
-.input-box {
+.input-box {{
     background: rgba(255,255,255,0.08);
     padding: 26px;
     border-radius: 18px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.15);
     margin-bottom: 8px;
-}
+    position: relative;
+    z-index: 10;
+}}
 
 /* Text Area */
-.stTextArea textarea {
+.stTextArea textarea {{
     background: rgba(255,255,255,0.05) !important;
     border: 2px solid rgba(255,255,255,0.2) !important;
     border-radius: 12px !important;
     color: white !important;
     font-size: 16px !important;
-}
+}}
 
-.stTextArea textarea:focus {
+.stTextArea textarea:focus {{
     border-color: #ff00ea !important;
     box-shadow: 0 0 15px rgba(255,0,234,0.3) !important;
-}
+}}
 
-.stTextArea label {
+.stTextArea label {{
     color: white !important;
     font-size: 18px !important;
     font-weight: 600 !important;
-}
+}}
 
 /* Button */
-.stButton>button {
+.stButton>button {{
     background: linear-gradient(135deg,#ff3caa,#8b41ff) !important;
     color: white !important;
     font-size: 20px !important;
@@ -93,15 +170,17 @@ html, body, [class*="css"] {
     border: none !important;
     width: 100% !important;
     transition: all 0.3s ease !important;
-}
+    position: relative;
+    z-index: 10;
+}}
 
-.stButton>button:hover {
+.stButton>button:hover {{
     transform: scale(1.03) !important;
     box-shadow: 0 0 22px rgba(255,60,186,0.5) !important;
-}
+}}
 
 /* Prediction Card */
-.pred-card {
+.pred-card {{
     margin-top: 24px;
     background: linear-gradient(135deg,#191035,#351051);
     border: 1px solid rgba(255,255,255,0.12);
@@ -110,27 +189,30 @@ html, body, [class*="css"] {
     text-align: center;
     color: white;
     animation: slideUp 0.5s ease-out;
-}
+    position: relative;
+    z-index: 10;
+    backdrop-filter: blur(15px);
+}}
 
-@keyframes slideUp {
-    from {
+@keyframes slideUp {{
+    from {{
         opacity: 0;
         transform: translateY(30px);
-    }
-    to {
+    }}
+    to {{
         opacity: 1;
         transform: translateY(0);
-    }
-}
+    }}
+}}
 
-.pred-card h3 {
+.pred-card h3 {{
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 15px;
     color: #ffcb3c;
-}
+}}
 
-.pred-card h2 {
+.pred-card h2 {{
     font-size: 44px;
     font-weight: 900;
     background: linear-gradient(90deg,#ff00ea,#ffcb3c,#00ffe7);
@@ -138,23 +220,23 @@ html, body, [class*="css"] {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin: 20px 0;
-}
+}}
 
-.pred-card p {
+.pred-card p {{
     opacity: 0.8;
     font-size: 18px;
-}
+}}
 
 /* Example Chips */
-.example-chips {
+.example-chips {{
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     justify-content: center;
     margin: 20px 0;
-}
+}}
 
-.example-chip {
+.example-chip {{
     background: rgba(255,255,255,0.1);
     padding: 10px 20px;
     border-radius: 25px;
@@ -164,58 +246,108 @@ html, body, [class*="css"] {
     transition: all 0.3s ease;
     border: 2px solid rgba(255,255,255,0.2);
     color: white;
-}
+}}
 
-.example-chip:hover {
+.example-chip:hover {{
     background: linear-gradient(135deg,#ff3caa,#8b41ff);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255,60,186,0.3);
-}
+}}
 
 /* Warning/Info */
-.stWarning, .stInfo {
+.stWarning, .stInfo {{
     background: rgba(255,203,60,0.15) !important;
     border: 1px solid rgba(255,203,60,0.3) !important;
     color: #ffcb3c !important;
     border-radius: 12px !important;
-}
+    position: relative;
+    z-index: 10;
+}}
 
 /* Spinner */
-.stSpinner > div {
+.stSpinner > div {{
     border-top-color: #ff00ea !important;
-}
+}}
 
 /* Footer */
-.footer {
+.footer {{
     margin-top: 40px;
     text-align: center;
     opacity: 0.45;
     font-size: 14px;
     padding-bottom: 10px;
     color: white;
-}
+    position: relative;
+    z-index: 10;
+}}
 
 /* Hide Streamlit Branding */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
+#MainMenu {{visibility: hidden;}}
+footer {{visibility: hidden;}}
+header {{visibility: hidden;}}
+
+/* Columns need z-index */
+[data-testid="column"] {{
+    position: relative;
+    z-index: 10;
+}}
 </style>
+
+<!-- Scroll Background HTML -->
+<div class="scroll-bg">
+    <div class="bg-frame" id="frame1"></div>
+    <div class="bg-frame" id="frame2"></div>
+</div>
+
+<!-- Scroll Effect JavaScript -->
+<script>
+(function() {{
+    function updateScrollEffect() {{
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const docHeight = Math.max(
+            document.body.scrollHeight,
+            document.documentElement.scrollHeight,
+            document.body.offsetHeight,
+            document.documentElement.offsetHeight
+        );
+        
+        const maxScroll = docHeight - windowHeight;
+        
+        if (maxScroll <= 0) return;
+        
+        let progress = scrollTop / maxScroll;
+        progress = Math.min(Math.max(progress, 0), 1);
+        
+        const frame2 = document.getElementById('frame2');
+        if (frame2) {{
+            frame2.style.opacity = progress;
+        }}
+    }}
+    
+    window.addEventListener('scroll', updateScrollEffect);
+    window.addEventListener('resize', updateScrollEffect);
+    
+    // Initial call
+    setTimeout(updateScrollEffect, 100);
+}})();
+</script>
 """, unsafe_allow_html=True)
 
 # ===================== LOAD MODEL =====================
-import os
-import streamlit as st
-import joblib
-
 @st.cache_resource
 def load_model():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-    model = joblib.load(os.path.join(BASE_DIR, "model.pkl"))
-    tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf.pkl"))
-    label_encoder = joblib.load(os.path.join(BASE_DIR, "label_encoder.pkl"))
-
-    return model, tfidf, label_encoder
+    try:
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        
+        model = joblib.load(os.path.join(BASE_DIR, "model.pkl"))
+        tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf.pkl"))
+        label_encoder = joblib.load(os.path.join(BASE_DIR, "label_encoder.pkl"))
+        
+        return model, tfidf, label_encoder
+    except Exception as e:
+        st.error(f"Error loading model: {str(e)}")
+        return None, None, None
 
 # ===================== TEXT CLEANING =====================
 def clean_text(text):
@@ -312,5 +444,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
