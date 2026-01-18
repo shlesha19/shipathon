@@ -203,25 +203,19 @@ header {visibility: hidden;}
 """, unsafe_allow_html=True)
 
 # ===================== LOAD MODEL =====================
+import os
+import streamlit as st
+import joblib
+
 @st.cache_resource
-def load_model():
-    """Load the trained model, vectorizer, and label encoder"""
-    try:
-        model_dir = Path("model_artifacts")
-        
-        if not model_dir.exists():
-            st.error("⚠️ Model artifacts directory not found!")
-            st.info("Please run your training script first to generate the model files.")
-            return None, None, None
-        
-        model = joblib.load(model_dir / "sgd_classifier.pkl")
-        tfidf = joblib.load(model_dir / "tfidf_vectorizer.pkl")
-        label_encoder = joblib.load(model_dir / "label_encoder.pkl")
-        
-        return model, tfidf, label_encoder
-    except Exception as e:
-        st.error(f"Error loading model: {str(e)}")
-        return None, None, None
+def load_models():
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    model = joblib.load(os.path.join(BASE_DIR, "model.pkl"))
+    tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf.pkl"))
+    label_encoder = joblib.load(os.path.join(BASE_DIR, "label_encoder.pkl"))
+
+    return model, tfidf, label_encoder
 
 # ===================== TEXT CLEANING =====================
 def clean_text(text):
@@ -318,3 +312,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
