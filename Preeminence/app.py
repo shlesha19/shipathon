@@ -11,153 +11,8 @@ st.set_page_config(
     layout="wide"
 )
 
-# ===================== HELPERS =====================
-def get_base64_image(path):
-    try:
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    except:
-        return ""
-
+# ===================== PATHS =====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-frame1_b64 = get_base64_image(os.path.join(BASE_DIR, "frame1.png"))
-frame2_b64 = get_base64_image(os.path.join(BASE_DIR, "frame2.png"))
-
-# ===================== STYLES =====================
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800&display=swap');
-
-html, body, [class*="css"] {{
-    font-family: 'Inter', sans-serif !important;
-}}
-
-.stApp {{
-    background: linear-gradient(180deg,#0b1d3a,#0a2a5c,#06152e);
-    color: #eaf2ff;
-}}
-
-.stApp::before {{
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/png;base64,{frame1_b64}");
-    background-size: cover;
-    background-position: center;
-    opacity: 0.25;
-    z-index: 0;
-}}
-
-.stApp::after {{
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/png;base64,{frame2_b64}");
-    background-size: cover;
-    background-position: center;
-    opacity: var(--scroll-opacity, 0);
-    transition: opacity 0.4s ease;
-    z-index: 0;
-}}
-
-.hero {{
-    padding: 90px 20px 40px;
-    text-align: center;
-}}
-
-.hero-title {{
-    font-size: 54px;
-    font-weight: 800;
-    letter-spacing: -1px;
-}}
-
-.hero-sub {{
-    margin-top: 14px;
-    font-size: 18px;
-    color: #b7ccff;
-    max-width: 720px;
-    margin-inline: auto;
-}}
-
-.input-box {{
-    background: rgba(10,25,60,0.8);
-    padding: 28px;
-    border-radius: 20px;
-    border: 1px solid rgba(160,190,255,0.18);
-    backdrop-filter: blur(14px);
-}}
-
-.stTextArea textarea {{
-    background: rgba(255,255,255,0.05) !important;
-    border-radius: 14px !important;
-    border: 1px solid rgba(160,190,255,0.3) !important;
-    color: #eaf2ff !important;
-    font-size: 16px !important;
-}}
-
-.stTextArea textarea:focus {{
-    border-color: #7aa2ff !important;
-    box-shadow: 0 0 0 3px rgba(122,162,255,0.25) !important;
-}}
-
-.stButton>button {{
-    background: linear-gradient(135deg,#4f8cff,#2c5cff);
-    color: white !important;
-    font-size: 18px !important;
-    border-radius: 999px !important;
-    padding: 14px !important;
-    font-weight: 600 !important;
-    width: 100%;
-    border: none !important;
-}}
-
-.stButton>button:hover {{
-    transform: translateY(-1px);
-    box-shadow: 0 12px 32px rgba(79,140,255,0.35);
-}}
-
-.pred-card {{
-    margin-top: 32px;
-    background: rgba(12,28,68,0.9);
-    padding: 34px;
-    border-radius: 24px;
-    text-align: center;
-    border: 1px solid rgba(160,190,255,0.18);
-    backdrop-filter: blur(16px);
-    animation: fadeUp 0.5s ease-out;
-}}
-
-@keyframes fadeUp {{
-    from {{ opacity: 0; transform: translateY(20px); }}
-    to {{ opacity: 1; transform: translateY(0); }}
-}}
-
-.footer {{
-    margin-top: 50px;
-    text-align: center;
-    font-size: 14px;
-    opacity: 0.45;
-    padding-bottom: 16px;
-}}
-
-#MainMenu {{visibility: hidden;}}
-footer {{visibility: hidden;}}
-header {{visibility: hidden;}}
-</style>
-
-<script>
-(function() {{
-    function update() {{
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
-        document.documentElement.style.setProperty('--scroll-opacity', progress);
-    }}
-    window.addEventListener("scroll", update);
-    setTimeout(update, 200);
-}})();
-</script>
-""", unsafe_allow_html=True)
 
 # ===================== LOAD MODEL =====================
 @st.cache_resource
@@ -167,18 +22,165 @@ def load_model():
     label_encoder = joblib.load(os.path.join(BASE_DIR, "label_encoder.pkl"))
     return model, tfidf, label_encoder
 
-# ===================== CLEAN TEXT =====================
+# ===================== TEXT CLEAN =====================
 def clean_text(text):
     text = text.lower()
     return re.sub(r"[^a-z\s]", "", text)
 
+# ===================== STARRY + GRADIENT UI =====================
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* ===== MAIN BACKGROUND ===== */
+.stApp {
+    background:
+        radial-gradient(circle at 20% 20%, #1e90ff22, transparent 40%),
+        radial-gradient(circle at 80% 30%, #4169e122, transparent 40%),
+        radial-gradient(circle at 50% 80%, #0b3d9122, transparent 45%),
+        linear-gradient(180deg, #050b1e, #081a3a, #050b1e);
+    color: #eaf1ff;
+    overflow-x: hidden;
+}
+
+/* ===== STAR FIELD ===== */
+.stApp::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 20% 30%, white, transparent),
+        radial-gradient(1px 1px at 80% 20%, white, transparent),
+        radial-gradient(1px 1px at 50% 70%, white, transparent),
+        radial-gradient(1px 1px at 10% 90%, white, transparent),
+        radial-gradient(1px 1px at 90% 80%, white, transparent);
+    background-repeat: repeat;
+    background-size: 300px 300px;
+    opacity: 0.25;
+    z-index: 0;
+    animation: starsMove 120s linear infinite;
+}
+
+@keyframes starsMove {
+    from { transform: translateY(0); }
+    to { transform: translateY(-2000px); }
+}
+
+/* ===== HERO ===== */
+.hero {
+    padding: 110px 20px 60px;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 58px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #8ec5ff, #5a7dff, #8ec5ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+    margin-top: 16px;
+    font-size: 19px;
+    max-width: 720px;
+    margin-inline: auto;
+    color: #c7d8ff;
+    line-height: 1.6;
+}
+
+/* ===== GLASS CARD ===== */
+.glass {
+    background: rgba(10, 20, 50, 0.6);
+    border-radius: 22px;
+    padding: 32px;
+    border: 1px solid rgba(140,170,255,0.18);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+}
+
+/* ===== TEXT AREA ===== */
+.stTextArea textarea {
+    background: rgba(255,255,255,0.05) !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(140,170,255,0.35) !important;
+    color: #eef3ff !important;
+    font-size: 16px !important;
+}
+
+.stTextArea textarea:focus {
+    border-color: #7aa2ff !important;
+    box-shadow: 0 0 0 3px rgba(122,162,255,0.25) !important;
+}
+
+/* ===== BUTTON ===== */
+.stButton > button {
+    background: linear-gradient(135deg, #6aa6ff, #4b6cff);
+    color: white !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    border-radius: 999px !important;
+    padding: 14px !important;
+    width: 100%;
+    border: none !important;
+    transition: all 0.3s ease;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px rgba(90,125,255,0.45);
+}
+
+/* ===== RESULT CARD ===== */
+.result {
+    margin-top: 34px;
+    text-align: center;
+    padding: 36px;
+    border-radius: 26px;
+    background: linear-gradient(
+        180deg,
+        rgba(40,80,180,0.35),
+        rgba(15,30,80,0.65)
+    );
+    border: 1px solid rgba(140,170,255,0.25);
+    backdrop-filter: blur(20px);
+}
+
+.result h2 {
+    font-size: 46px;
+    font-weight: 800;
+    background: linear-gradient(90deg,#a3c9ff,#ffffff,#a3c9ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+    text-align: center;
+    opacity: 0.45;
+    font-size: 14px;
+    padding: 60px 0 20px;
+}
+
+/* Hide Streamlit UI */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header { visibility: hidden; }
+
+</style>
+""", unsafe_allow_html=True)
+
 # ===================== EXAMPLES =====================
 EXAMPLES = {
-    "Rock": "Screaming guitars and pounding drums, lost in the noise of the night",
-    "Hip-Hop": "Flowing with rhythm, dropping bars, stories from the street",
-    "Pop": "Dancing under city lights, hearts colliding, feeling alive",
-    "Country": "Dirt roads, old trucks, sunsets and memories",
-    "Blues": "Lonely nights, broken hearts, slow melodies"
+    "Rock": "Crashing drums, distorted guitars, screaming into the night",
+    "Hip-Hop": "Rhymes and rhythm, stories from the street, beats hitting hard",
+    "Pop": "Bright lights, dancing hearts, everything feels alive tonight",
+    "Country": "Dusty roads, old trucks, sunsets and memories",
+    "Blues": "Slow nights, heavy hearts, melodies soaked in pain"
 }
 
 # ===================== APP =====================
@@ -189,8 +191,9 @@ def main():
     <div class="hero">
         <div class="hero-title">Genre Guesser</div>
         <div class="hero-sub">
-            Type a few lines of lyrics.  
-            Let the model gently figure out where the song belongs.
+            Music carries patterns hidden in words.  
+            Paste a few lines of lyrics and let the model
+            quietly infer the genre.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -198,23 +201,25 @@ def main():
     col1, col2, col3 = st.columns([1, 3, 1])
 
     with col2:
+        st.markdown("<div class='glass'>", unsafe_allow_html=True)
+
         cols = st.columns(len(EXAMPLES))
-        for i, (g, text) in enumerate(EXAMPLES.items()):
+        for i, (g, txt) in enumerate(EXAMPLES.items()):
             with cols[i]:
                 if st.button(g):
-                    st.session_state.sample = text
+                    st.session_state.sample = txt
                     st.rerun()
 
         lyrics = st.text_area(
             "Lyrics",
             value=st.session_state.pop("sample", ""),
-            placeholder="Write a few lines here…",
+            placeholder="Type or paste a few lines here…",
             height=200
         )
 
-        if st.button("Predict Genre"):
+        if st.button("Predict genre"):
             if lyrics.strip() == "":
-                st.warning("Please enter some lyrics first.")
+                st.warning("Please enter some lyrics.")
             else:
                 cleaned = clean_text(lyrics)
                 X = tfidf.transform([cleaned])
@@ -223,20 +228,16 @@ def main():
                 confidence = max(model.predict_proba(X)[0]) * 100
 
                 st.markdown(f"""
-                <div class="pred-card">
-                    <h3>Predicted Genre</h3>
+                <div class="result">
+                    <h3>Predicted genre</h3>
                     <h2>{genre.upper()}</h2>
                     <p>Confidence: {confidence:.1f}%</p>
                 </div>
                 """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height:50vh'></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="footer">
-        Built with machine learning • music • curiosity
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div class='footer'>Built with ML • music • curiosity</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
