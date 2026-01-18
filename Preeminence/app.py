@@ -37,48 +37,11 @@ html, body, [class*="css"] {{
 
 /* Background with scroll transition effect */
 .stApp {{
-    position: relative;
     background: #000000 !important;
     color: #eee !important;
-    overflow-x: hidden;
 }}
 
-/* Scroll background container */
-.scroll-bg {{
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-}}
-
-.bg-frame {{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: opacity 0.3s ease;
-}}
-
-#frame1 {{
-    background-image: url('data:image/png;base64,{frame1_b64 if frame1_b64 else ""}');
-    opacity: 1;
-    z-index: 1;
-}}
-
-#frame2 {{
-    background-image: url('data:image/png;base64,{frame2_b64 if frame2_b64 else ""}');
-    opacity: 0;
-    z-index: 2;
-}}
-
-/* Fallback gradient if images don't load */
+/* Fixed background layers */
 .stApp::before {{
     content: '';
     position: fixed;
@@ -86,24 +49,43 @@ html, body, [class*="css"] {{
     left: 0;
     width: 100%;
     height: 100vh;
-    background: radial-gradient(circle at top,#1e0036,#12001e,#09000e 65%);
-    z-index: -1;
+    background-image: url('data:image/png;base64,{frame1_b64 if frame1_b64 else ""}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
     pointer-events: none;
 }}
 
-/* Content container with higher z-index */
-.main-content {{
-    position: relative;
-    z-index: 10;
+.stApp::after {{
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-image: url('data:image/png;base64,{frame2_b64 if frame2_b64 else ""}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    z-index: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
 }}
+
+/* Fallback gradient if images don't load */
+{f'''
+.stApp {{
+    background: radial-gradient(circle at top,#1e0036,#12001e,#09000e 65%) !important;
+}}
+''' if not frame1_b64 else ''}
 
 /* Hero */
 .hero {{
     padding: 90px 20px;
     text-align: center;
     color: white;
-    position: relative;
-    z-index: 10;
 }}
 
 .hero-title {{
@@ -129,23 +111,25 @@ html, body, [class*="css"] {{
 
 /* Input container */
 .input-box {{
-    background: rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.6);
     padding: 26px;
     border-radius: 18px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.15);
     margin-bottom: 8px;
-    position: relative;
-    z-index: 10;
 }}
 
 /* Text Area */
 .stTextArea textarea {{
-    background: rgba(255,255,255,0.05) !important;
+    background: rgba(0,0,0,0.5) !important;
     border: 2px solid rgba(255,255,255,0.2) !important;
     border-radius: 12px !important;
     color: white !important;
     font-size: 16px !important;
+}}
+
+.stTextArea textarea::placeholder {{
+    color: rgba(255,255,255,0.5) !important;
 }}
 
 .stTextArea textarea:focus {{
@@ -170,8 +154,6 @@ html, body, [class*="css"] {{
     border: none !important;
     width: 100% !important;
     transition: all 0.3s ease !important;
-    position: relative;
-    z-index: 10;
 }}
 
 .stButton>button:hover {{
@@ -182,15 +164,13 @@ html, body, [class*="css"] {{
 /* Prediction Card */
 .pred-card {{
     margin-top: 24px;
-    background: linear-gradient(135deg,#191035,#351051);
+    background: rgba(25,16,53,0.9);
     border: 1px solid rgba(255,255,255,0.12);
     padding: 30px;
     border-radius: 20px;
     text-align: center;
     color: white;
     animation: slideUp 0.5s ease-out;
-    position: relative;
-    z-index: 10;
     backdrop-filter: blur(15px);
 }}
 
@@ -227,41 +207,13 @@ html, body, [class*="css"] {{
     font-size: 18px;
 }}
 
-/* Example Chips */
-.example-chips {{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin: 20px 0;
-}}
-
-.example-chip {{
-    background: rgba(255,255,255,0.1);
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid rgba(255,255,255,0.2);
-    color: white;
-}}
-
-.example-chip:hover {{
-    background: linear-gradient(135deg,#ff3caa,#8b41ff);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255,60,186,0.3);
-}}
-
 /* Warning/Info */
 .stWarning, .stInfo {{
-    background: rgba(255,203,60,0.15) !important;
-    border: 1px solid rgba(255,203,60,0.3) !important;
+    background: rgba(255,203,60,0.25) !important;
+    border: 1px solid rgba(255,203,60,0.4) !important;
     color: #ffcb3c !important;
     border-radius: 12px !important;
-    position: relative;
-    z-index: 10;
+    backdrop-filter: blur(10px);
 }}
 
 /* Spinner */
@@ -277,8 +229,6 @@ html, body, [class*="css"] {{
     font-size: 14px;
     padding-bottom: 10px;
     color: white;
-    position: relative;
-    z-index: 10;
 }}
 
 /* Hide Streamlit Branding */
@@ -286,47 +236,55 @@ html, body, [class*="css"] {{
 footer {{visibility: hidden;}}
 header {{visibility: hidden;}}
 
-/* Columns need z-index */
-[data-testid="column"] {{
-    position: relative;
-    z-index: 10;
+/* Center text style */
+.center-text {{
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 600;
 }}
 </style>
-
-<!-- Scroll Background HTML -->
-<div class="scroll-bg">
-    <div class="bg-frame" id="frame1"></div>
-    <div class="bg-frame" id="frame2"></div>
-</div>
 
 <!-- Scroll Effect JavaScript -->
 <script>
 (function() {{
+    let ticking = false;
+    
     function updateScrollEffect() {{
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const windowHeight = window.innerHeight;
         const docHeight = Math.max(
             document.body.scrollHeight,
-            document.documentElement.scrollHeight,
-            document.body.offsetHeight,
-            document.documentElement.offsetHeight
+            document.documentElement.scrollHeight
         );
         
-        const maxScroll = docHeight - windowHeight;
+        const maxScroll = Math.max(docHeight - windowHeight, 1);
+        let progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
         
-        if (maxScroll <= 0) return;
+        // Apply opacity to ::after pseudo-element via CSS variable
+        document.documentElement.style.setProperty('--scroll-opacity', progress);
         
-        let progress = scrollTop / maxScroll;
-        progress = Math.min(Math.max(progress, 0), 1);
+        // Also update stApp::after directly if possible
+        const style = document.createElement('style');
+        style.innerHTML = `.stApp::after {{ opacity: ${{progress}} !important; }}`;
+        const oldStyle = document.getElementById('scroll-style');
+        if (oldStyle) oldStyle.remove();
+        style.id = 'scroll-style';
+        document.head.appendChild(style);
         
-        const frame2 = document.getElementById('frame2');
-        if (frame2) {{
-            frame2.style.opacity = progress;
+        ticking = false;
+    }}
+    
+    function requestTick() {{
+        if (!ticking) {{
+            window.requestAnimationFrame(updateScrollEffect);
+            ticking = true;
         }}
     }}
     
-    window.addEventListener('scroll', updateScrollEffect);
-    window.addEventListener('resize', updateScrollEffect);
+    window.addEventListener('scroll', requestTick);
+    window.addEventListener('resize', requestTick);
     
     // Initial call
     setTimeout(updateScrollEffect, 100);
@@ -385,7 +343,7 @@ def main():
     
     with col2:
         # ===================== EXAMPLE CHIPS =====================
-        st.markdown('<div style="text-align: center; color: white; margin-bottom: 20px; font-size: 16px; font-weight: 600;">🎼 Try Example Lyrics:</div>', unsafe_allow_html=True)
+        st.markdown('<div class="center-text">🎼 Try Example Lyrics:</div>', unsafe_allow_html=True)
         
         cols = st.columns(len(EXAMPLES))
         for idx, (label, example_text) in enumerate(EXAMPLES.items()):
@@ -407,7 +365,8 @@ def main():
             "🎤 Drop lyrics to join the lineup",
             value=default_text,
             placeholder="e.g. 'We were both young when I first saw you…'",
-            height=200
+            height=200,
+            key="lyrics_input"
         )
         st.markdown('</div>', unsafe_allow_html=True)
         
@@ -434,6 +393,9 @@ def main():
                         <p style="margin-top: 15px; font-size: 16px;">Confidence: {confidence:.1f}%</p>
                     </div>
                     """, unsafe_allow_html=True)
+    
+    # Add spacing for scroll effect
+    st.markdown("<div style='height: 50vh;'></div>", unsafe_allow_html=True)
     
     # ===================== FOOTER =====================
     st.markdown("""
